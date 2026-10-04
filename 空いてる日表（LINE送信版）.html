@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>空き日カレンダー</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1d2330;--sub:#6b7385;--line:#e3e6ec;--ac:#3b6cf6;
+--c1:#ffe9b8;--c2:#cfe8ff;--c3:#e3d4ff;--c4:#c7c9d9;--c5:#e6e8ee;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171d;--card:#1e222b;--tx:#eef0f5;--sub:#9aa2b5;--line:#2e3441;--ac:#7a9bff;
+--c1:#5a4a1f;--c2:#1f4666;--c3:#47346b;--c4:#3a3d57;--c5:#2c313c}}
+:root[data-theme="dark"]{--bg:#14171d;--card:#1e222b;--tx:#eef0f5;--sub:#9aa2b5;--line:#2e3441;--ac:#7a9bff;--c1:#5a4a1f;--c2:#1f4666;--c3:#47346b;--c4:#3a3d57;--c5:#2c313c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;padding:16px 12px 40px}
+h1{font-size:20px;margin:0 0 4px}
+.sub{color:var(--sub);font-size:13px;margin:0 0 12px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+input,button{font:inherit;color:inherit}
+input[type=date]{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:8px 12px;font-weight:600}
+.btn.g{background:var(--card);color:var(--tx);border:1px solid var(--line)}
+.legend{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;margin-bottom:12px}
+.legend span{padding:3px 8px;border-radius:999px}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:480px}
+th,td{border-bottom:1px solid var(--line);text-align:center;padding:0}
+th{font-size:12px;color:var(--sub);padding:8px 2px;font-weight:600}
+th small{display:block;font-weight:400}
+.name{position:sticky;left:0;background:var(--card);min-width:84px;text-align:left;padding:0 4px 0 8px;z-index:1}
+.name input{width:68px;border:0;background:transparent;font-weight:600;padding:12px 0}
+.name button{border:0;background:none;color:var(--sub);font-size:16px;padding:4px}
+td button{width:100%;height:46px;border:0;background:transparent;font-size:16px;font-weight:600}
+td button:active{opacity:.6}
+.s1{background:var(--c1)}.s2{background:var(--c2)}.s3{background:var(--c3)}.s4{background:var(--c4)}.s5{background:var(--c5);color:var(--sub)}
+tfoot td{font-size:12px;color:var(--sub);padding:8px 0}
+.s0{background:transparent}
+td button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+td button i{font-style:normal;font-size:9px;font-weight:500;color:var(--ok);line-height:1}
+:root{--ok:#1a9b57}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ok:#5fd79a}}
+:root[data-theme="dark"]{--ok:#5fd79a}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;z-index:9}
+.ov.on{display:flex}
+.sheet{background:var(--card);width:100%;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.sheet h2{font-size:16px;margin:0 0 12px}
+.sheet h3{font-size:13px;color:var(--sub);margin:14px 0 6px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-weight:600}
+.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.row{display:flex;gap:8px;align-items:center}
+.row input[type=time]{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;flex:1;min-width:0}
+.acts{display:flex;gap:8px;margin-top:16px}.acts .btn{flex:1}
+.tabs{display:flex;gap:6px;margin-bottom:12px}.tabs .chip{flex:1}
+.list{background:var(--card);border:1px solid var(--line);border-radius:12px}
+.li{padding:10px 12px;border-bottom:1px solid var(--line);font-size:14px}.li:last-child{border:0}.li b{margin-right:6px}.li.best{outline:2px solid var(--ok);outline-offset:-2px;border-radius:12px}
+textarea,.nm{width:100%;background:var(--card);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
+textarea{min-height:140px;margin:8px 0}
+.ro button{cursor:default}
+.me td.name{font-weight:700}
+.note{font-size:12px;color:var(--sub);margin:8px 0}
+.best{outline:2px solid var(--ok);outline-offset:-2px}
+.sat{color:#3b6cf6}.sun{color:#e5484d}
+</style>
+</head>
+<body>
+<h1>空いてる日表</h1>
+<div class="tabs"><button class="chip on" id="t1">自分の空きを入力</button><button class="chip" id="t2">みんなの集計</button></div>
+
+<div id="p1">
+<p class="sub">名前を入れて、空いてる日をタップ。最後に「LINEに送る」でグループに投稿します。</p>
+<input class="nm" id="nm" placeholder="名前" maxlength="12" style="margin-bottom:10px">
+<div class="bar">
+  <button class="btn g" id="prev">◀ 前週</button>
+  <input type="date" id="start" aria-label="週の開始日">
+  <button class="btn g" id="next">次週 ▶</button>
+</div>
+<div class="legend"><span class="s2">○：空いてる日</span><span class="s5">・：未入力</span></div>
+<div class="wrap"><table id="tbl"></table></div>
+<div class="acts" style="margin-top:12px"><a class="btn" id="send" style="text-align:center;text-decoration:none">LINEに送る</a><button class="btn g" id="copy">コピー</button></div>
+<p class="note" id="msg"></p>
+</div>
+
+<div id="p2" style="display:none">
+<p class="sub">LINEグループで、みんなが送った「【空き】…」のメッセージをコピーして、ここに貼り付けてください。</p>
+<textarea id="paste" placeholder="ここに貼り付け"></textarea>
+<button class="btn" id="agg">集計する</button>
+<p class="note" id="aggnote"></p>
+<div class="list" id="res" style="margin-top:8px;display:none"></div>
+</div>
+<div class="ov" id="ov"><div class="sheet">
+<h2 id="ttl"></h2>
+<h3>空いてる時間</h3>
+<div class="chips" style="margin-bottom:8px"><button class="chip" id="allday">終日OK</button><button class="chip" id="none">なし</button></div>
+<div class="row"><input type="time" id="ft"><span>〜</span><input type="time" id="tt"></div>
+<div class="acts"><button class="btn g" id="cancel">キャンセル</button><button class="btn" id="ok">保存</button></div>
+</div></div>
+<script>
+const WD=["日","月","火","水","木","金","土"];
+const $=id=>document.getElementById(id);
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function mondayOf(d){const x=new Date(d);x.setDate(x.getDate()-(x.getDay()+6)%7);return x}
+let start=iso(mondayOf(new Date())),cur=null;
+let st={name:"",f:{}};
+try{const r=localStorage.getItem("free-v2");if(r)st=JSON.parse(r)}catch(e){}
+const save=()=>{try{localStorage.setItem("free-v2",JSON.stringify(st))}catch(e){}};
+const lab=k=>{const d=new Date(k+"T00:00:00");return (d.getMonth()+1)+"/"+d.getDate()+"("+WD[d.getDay()]+")"};
+function hh(t){const[a,b]=t.split(":");return b==="00"?String(+a):+a+":"+b}
+function fmt(f){if(!f||f==="終日")return"";const[a,b]=f.split("-");return hh(a)+"-"+hh(b)}
+function dates(){const b=new Date(start+"T00:00:00");return[...Array(7)].map((_,i)=>{const d=new Date(b);d.setDate(b.getDate()+i);return d})}
+function render(){
+  $("start").value=start;$("nm").value=st.name||"";
+  let h="<thead><tr>"+dates().map(d=>{const w=d.getDay();return `<th class="${w==6?'sat':w==0?'sun':''}">${WD[w]}<small>${d.getMonth()+1}/${d.getDate()}</small></th>`}).join("")+"</tr></thead><tbody><tr>";
+  dates().forEach(d=>{const k=iso(d),f=st.f[k];h+=`<td><button class="${f?'s2':''}" data-k="${k}"><span>${f?"○":"・"}</span><i>${fmt(f)}</i></button></td>`});
+  $("tbl").innerHTML=h+"</tr></tbody>";
+  const m=message();$("send").href="https://line.me/R/msg/text/?"+encodeURIComponent(m);
+}
+function message(){
+  const today=iso(new Date());
+  const rows=Object.keys(st.f).sort().filter(k=>k>=today).map(k=>lab(k)+" "+(st.f[k]==="終日"?"終日":fmt(st.f[k])));
+  return "【空き】"+(st.name||"名無し")+"\n"+(rows.length?rows.join("\n"):"（なし）");
+}
+$("nm").onchange=e=>{st.name=e.target.value.trim();save();render()};
+$("tbl").onclick=e=>{const b=e.target.closest("button");if(b)openSheet(b.dataset.k)};
+function openSheet(k){
+  const f=st.f[k];cur={k,all:f==="終日"};
+  $("ft").value=f&&f!=="終日"?f.split("-")[0]:"";$("tt").value=f&&f!=="終日"?f.split("-")[1]:"";
+  $("ttl").textContent=lab(k);$("allday").classList.toggle("on",cur.all);$("ov").classList.add("on");
+}
+$("allday").onclick=()=>{cur.all=!cur.all;if(cur.all){$("ft").value="";$("tt").value=""}$("allday").classList.toggle("on",cur.all)};
+$("none").onclick=()=>{cur.all=false;$("ft").value="";$("tt").value="";$("allday").classList.remove("on")};
+["ft","tt"].forEach(i=>$(i).oninput=()=>{cur.all=false;$("allday").classList.remove("on")});
+$("cancel").onclick=()=>$("ov").classList.remove("on");
+$("ov").onclick=e=>{if(e.target.id==="ov")$("ov").classList.remove("on")};
+$("ok").onclick=()=>{
+  const k=cur.k,a=$("ft").value,b=$("tt").value;
+  if(cur.all)st.f[k]="終日";
+  else if(a&&b){if(a>=b){alert("終了時刻は開始より後にしてください");return}st.f[k]=a+"-"+b}
+  else if(a||b){alert("開始と終了の両方を入れてください");return}
+  else delete st.f[k];
+  save();render();$("ov").classList.remove("on");
+};
+$("prev").onclick=()=>{const d=new Date(start+"T00:00:00");d.setDate(d.getDate()-7);start=iso(d);render()};
+$("next").onclick=()=>{const d=new Date(start+"T00:00:00");d.setDate(d.getDate()+7);start=iso(d);render()};
+$("start").onchange=e=>{if(e.target.value){start=e.target.value;render()}};
+$("copy").onclick=async()=>{
+  try{await navigator.clipboard.writeText(message());$("msg").textContent="コピーしました。LINEに貼り付けてください。"}
+  catch(e){$("msg").textContent="コピーできませんでした。「LINEに送る」を使ってください。"}
+};
+$("t1").onclick=()=>tab(1);$("t2").onclick=()=>tab(2);
+function tab(n){$("p1").style.display=n==1?"":"none";$("p2").style.display=n==2?"":"none";$("t1").classList.toggle("on",n==1);$("t2").classList.toggle("on",n==2)}
+// ---- 集計 ----
+function dateKey(m,d){
+  const t=new Date();t.setHours(0,0,0,0);let y=t.getFullYear();
+  let x=new Date(y,m-1,d);if(x<t)x=new Date(y+1,m-1,d);return iso(x)
+}
+$("agg").onclick=()=>{
+  const lines=$("paste").value.split(/\r?\n/);
+  const people={};let who=null;
+  for(const raw of lines){
+    const l=raw.trim();
+    const h=l.match(/【空き】\s*(.*)$/);
+    if(h){who=(h[1]||"名無し").trim();people[who]={};continue}
+    const m=l.match(/^(\d{1,2})\/(\d{1,2})\s*\([日月火水木金土]\)\s*(終日|\d{1,2}(?::\d{2})?-\d{1,2}(?::\d{2})?)/);
+    if(m&&who)people[who][dateKey(+m[1],+m[2])]=m[3];
+    else if(l&&!/^\d{1,2}:\d{2}/.test(l)&&who&&!m&&!/^（なし）/.test(l)&&h===null){/* 他の発言は無視 */}
+  }
+  const names=Object.keys(people);
+  if(!names.length){$("aggnote").textContent="「【空き】」で始まるメッセージが見つかりませんでした。";$("res").style.display="none";return}
+  const by={};names.forEach(n=>Object.entries(people[n]).forEach(([k,v])=>{(by[k]=by[k]||[]).push({n,v})}));
+  const keys=Object.keys(by).sort();const mx=Math.max(0,...keys.map(k=>by[k].length));
+  $("aggnote").textContent=names.length+"人分を集計しました。緑の枠は、いちばん多くの人が空いてる日です。";
+  $("res").style.display="";
+  $("res").innerHTML=keys.length?keys.map(k=>`<div class="li${by[k].length===mx&&names.length>1?' best':''}"><b>${lab(k)}</b>${by[k].length}人：${by[k].map(p=>esc(p.n)+(p.v==="終日"?"":"("+esc(fmt(p.v))+")")).join("、")}</div>`).join(""):`<div class="li">空きの登録がありませんでした。</div>`;
+};
+render();
+</script>
+</body>
+</html>
